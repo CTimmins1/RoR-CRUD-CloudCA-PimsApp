@@ -1,0 +1,17 @@
+<%# app/views/tasks/show.html.erb %>
+
+<p style="color: green"><%= notice %></p>
+
+<%# Assuming you render the task details here %>
+<%= render @task %>
+
+<div>
+  <%# FIX 1: Change 'edit_task_path(@task)' to 'edit_project_task_path(@project, @task)' %>
+  <%= link_to "Edit this task", edit_project_task_path(@project, @task) %> |
+  
+  <%# Link back to the parent project is usually better than 'Back to tasks' %>
+  <%= link_to "Back to project", @project %> 
+
+  <%# FIX 2: Change '@task' to 'project_task_path(@project, @task)' for button_to %>
+  <%= button_to "Destroy this task", project_task_path(@project, @task), method: :delete %>
+</div>
