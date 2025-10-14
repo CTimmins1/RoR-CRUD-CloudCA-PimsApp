@@ -16,14 +16,14 @@ class Project < ApplicationRecord
   def self.status_counts
     # 1. Query the database for counts of all projects grouped by status integer
     raw_counts = group(:status).count
-    
+
     # 2. Format the data for Chartkick: convert the integer key back to a human-readable string.
     raw_counts.map do |status_enum_int, count|
       # Project.statuses is the enum map, .key() gets the symbol name, .humanize makes it readable
-      [Project.statuses.key(status_enum_int).humanize, count]
+      [ Project.statuses.key(status_enum_int).humanize, count ]
     end
   end
-  
+
   # -------------------------------------------------------------
   # 2. INSTANCE METHOD: Gets the status counts for *THIS PROJECT'S TASKS*
   # (CRUCIAL for the Project Dashboard Chart)
@@ -32,7 +32,7 @@ class Project < ApplicationRecord
     # Use the 'tasks' association to scope the query
     # NOTE: This assumes your Task model also has a status enum defined (e.g., Task.statuses)
     tasks.group(:status).count
-    # Since tasks.group(:status).count returns the map in the format {integer => count}, 
+    # Since tasks.group(:status).count returns the map in the format {integer => count},
     # Chartkick can often handle this directly if the Task model is consistent.
     # If not, you might need to map it similarly to self.status_counts, using Task.statuses.
   end

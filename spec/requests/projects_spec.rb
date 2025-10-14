@@ -7,12 +7,12 @@ RSpec.describe "Projects", type: :request do
   let(:valid_attributes) { FactoryBot.attributes_for(:project) }
   # Helper for invalid attributes (e.g., missing required 'title')
   let(:invalid_attributes) { { title: nil, description: "Missing title" } }
-  
+
   # Ensure an instance exists for tests like show, edit, update, destroy
   let!(:project) { FactoryBot.create(:project) }
 
   # --- Controller Tests ---
-  
+
   describe "GET /index" do
     it "renders a successful response" do
       get projects_url

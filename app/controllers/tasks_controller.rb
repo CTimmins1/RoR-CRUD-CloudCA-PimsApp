@@ -57,7 +57,7 @@ class TasksController < ApplicationController
 
   private
     # Use callbacks to share common setup or constraints between actions.
-    
+
     # Finds the parent Project
     def set_project
       @project = Project.find(params[:project_id])

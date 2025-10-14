@@ -4,9 +4,9 @@ require 'rails_helper'
 RSpec.describe "Tasks", type: :request do
   # --- FactoryBot Helpers ---
   # Need a parent project for all nested routes
-  let!(:project) { FactoryBot.create(:project) } 
+  let!(:project) { FactoryBot.create(:project) }
   let!(:task) { FactoryBot.create(:task, project: project) } # Task scoped to the project
-  
+
   let(:valid_attributes) { FactoryBot.attributes_for(:task) }
   let(:invalid_attributes) { { title: nil, description: "Missing title" } }
 

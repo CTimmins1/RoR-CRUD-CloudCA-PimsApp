@@ -45,8 +45,8 @@ RSpec.configure do |config|
   # examples within a transaction, remove the following line or assign false
   # instead of true.
   config.use_transactional_fixtures = true
- 
-   # FIX 1: NameError: uninitialized constant FactoryBot
+
+  # FIX 1: NameError: uninitialized constant FactoryBot
   # Makes FactoryBot methods (like create, build) available globally without prefixing with 'FactoryBot.'
   config.include FactoryBot::Syntax::Methods
 
