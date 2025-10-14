@@ -13,7 +13,8 @@ class TasksController < ApplicationController
 
   # GET /projects/:project_id/tasks/1
   def show
-    # @task is set by set_task
+    @project = Project.find(params[:project_id])
+    @task = @project.tasks.find(params[:id])
   end
 
   # GET /projects/:project_id/tasks/new

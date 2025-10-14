@@ -3,7 +3,8 @@
 <p style="color: green"><%= notice %></p>
 
 <%# Assuming you render the task details here %>
-<%= render @task %>
+<%= render partial: "tasks/task", locals: { task: @task, project: @project } %>
+
 
 <div>
   <%# FIX 1: Change 'edit_task_path(@task)' to 'edit_project_task_path(@project, @task)' %>

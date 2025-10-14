@@ -3,7 +3,9 @@
     <h5 class="card-title"><%= task.title %></h5>
     <p class="card-text flex-grow-1">
       <small>Priority: 
-        <%= content_tag :span, task.priority.humanize, class: "badge bg-#{task.priority == 'high' ? 'danger' : task.priority == 'medium' ? 'primary' : 'light text-dark'}" %>
+        <%= content_tag :span,
+                task.priority ? task.priority.humanize : "No priority",
+                class: "badge bg-#{task.priority == 'high' ? 'danger' : task.priority == 'medium' ? 'primary' : 'light text-dark'}" %>
       </small>
     </p>
     <p class="card-text">
