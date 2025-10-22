@@ -28,16 +28,23 @@ class TasksController < ApplicationController
   end
 
   # POST /projects/:project_id/tasks
-  def create
-    @task = @project.tasks.build(task_params)
+def create
+  @project = Project.find(params[:project_id])
 
-    if @task.save
-      # Redirect to the parent project's show page
-      redirect_to @project, notice: "Task was successfully created."
-    else
-      render :new, status: :unprocessable_entity
-    end
+  # Normalize priority before building the task
+  task_attributes = task_params.to_h
+  if task_attributes["priority"].present? && task_attributes["priority"].match?(/^\d+$/)
+    task_attributes["priority"] = Task.priorities.key(task_attributes["priority"].to_i)
   end
+
+  @task = @project.tasks.build(task_attributes)
+
+  if @task.save
+    redirect_to @project, notice: "Task was successfully created."
+  else
+    render :new, status: :unprocessable_content
+  end
+end
 
   # PATCH/PUT /projects/:project_id/tasks/1
   def update
