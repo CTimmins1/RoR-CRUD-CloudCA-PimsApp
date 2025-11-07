@@ -28,7 +28,7 @@ class TasksController < ApplicationController
   end
 
   # POST /projects/:project_id/tasks
-def create
+  def create
   @project = Project.find(params[:project_id])
 
   # Normalize priority before building the task
