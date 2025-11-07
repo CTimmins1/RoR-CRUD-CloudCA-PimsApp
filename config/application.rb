@@ -22,7 +22,6 @@ module PimsApp
     config.generators do |g|
       g.test_framework :rspec
       g.system_tests nil   # don’t generate Rails/Minitest system tests
-      
     end
 
     # Configuration for the application, engines, and railties goes here.
