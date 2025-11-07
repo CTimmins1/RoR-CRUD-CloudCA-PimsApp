@@ -77,7 +77,11 @@ jobs:
         run: |
           bin/rails db:test:prepare
           bin/rails test
-          bin/rails test:system
+          if ls test/system/*.rb >/dev/null 2>&1; then
+            bin/rails test:system
+          else
+            echo "No system tests found"
+          fi
 
 
       - name: Run RSpec
