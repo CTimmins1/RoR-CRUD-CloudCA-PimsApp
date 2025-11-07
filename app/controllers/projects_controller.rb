@@ -3,12 +3,11 @@ class ProjectsController < ApplicationController
 
   # GET /projects or /projects.json
   def index
-    @projects = Project.all
+    @projects = Project.includes(:tasks).order(created_at: :desc)
   end
 
   # GET /projects/1 or /projects/1.json
-  def show
-  end
+  def show; end
 
   # GET /projects/new
   def new
@@ -16,8 +15,7 @@ class ProjectsController < ApplicationController
   end
 
   # GET /projects/1/edit
-  def edit
-  end
+  def edit; end
 
   # POST /projects or /projects.json
   def create
@@ -58,13 +56,12 @@ class ProjectsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_project
-      @project = Project.find(params.expect(:id))
-    end
 
-    # Only allow a list of trusted parameters through.
-    def project_params
-      params.expect(project: [ :title, :description, :status ])
-    end
+  def set_project
+    @project = Project.find(params[:id])
+  end
+
+  def project_params
+    params.require(:project).permit(:title, :description, :status)
+  end
 end
