@@ -27,7 +27,7 @@ class TasksController < ApplicationController
     # @task is set by set_task
   end
 
-  # POST /projects/:project_id/tasks
+# POST /projects/:project_id/tasks
 def create
   @project = Project.find(params[:project_id])
 
