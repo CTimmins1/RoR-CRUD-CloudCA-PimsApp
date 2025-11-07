@@ -13,26 +13,64 @@
       </tr>
     </thead>
     <tbody>
-      <% @projects.each do |project| %>
+      <% if @projects.any? %>
+        <% @projects.each do |project| %>
+          <tr>
+            <td><%= project.title %></td>
+            <td><%= truncate(project.description.to_s, length: 50) %></td>
+            <td>
+              <%= content_tag :span,
+                              project.status.humanize,
+                              class: "badge bg-#{project.completed? ? 'success' : project.in_progress? ? 'warning' : 'secondary'}" %>
+            </td>
+            <td><%= link_to "Show", project, class: "btn btn-sm btn-info text-white" %></td>
+            <td><%= link_to "Edit", edit_project_path(project), class: "btn btn-sm btn-secondary" %></td>
+            <td><%= button_to "Destroy", project, method: :delete, data: { confirm: "Are you sure?" }, class: "btn btn-sm btn-danger" %></td>
+          </tr>
+        <% end %>
+      <% else %>
         <tr>
-          <td><%= project.title %></td>
-          <td><%= truncate(project.description, length: 50) %></td>
-          <td>
-            <%# Apply badges based on status for visual feedback %>
-            <%= content_tag :span, project.status.humanize, class: "badge bg-#{project.status == 'completed' ? 'success' : project.status == 'in_progress' ? 'warning' : 'secondary'}" %>
-          </td>
-          <td><%= link_to "Show", project, class: "btn btn-sm btn-info text-white" %></td>
-          <td><%= link_to "Edit", edit_project_path(project), class: "btn btn-sm btn-secondary" %></td>
-          <td><%= button_to "Destroy", project, method: :delete, data: { confirm: 'Are you sure?' }, class: "btn btn-sm btn-danger" %></td>
+          <td colspan="6" class="text-center">No projects yet — <%= link_to "create one", new_project_path %>.</td>
         </tr>
       <% end %>
     </tbody>
   </table>
 </div>
-<div class="card mt-5 shadow-sm">
-  <div class="card-body">
-    <h5 class="card-title text-center">Tasks per Project</h5>
-    <%= column_chart Project.joins(:tasks).group(:title).count, height: "400px", library: { title: { text: "Number of Tasks per Project" } } %>
-  </div>
-</div>
 
+<%# ---- Charts ---- %>
+
+<%# Tasks per Project (include zero-task projects + avoid title collisions) %>
+<% tasks_per_project = Project.left_joins(:tasks)
+                              .group("projects.id", "projects.title")
+                              .count.transform_keys { |(id, title)| title } %>
+
+<% if tasks_per_project.present? %>
+  <div class="card mt-5 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title text-center">Tasks per Project</h5>
+      <%= column_chart tasks_per_project,
+                       height: "400px",
+                       library: { title: { text: "Number of Tasks per Project" } } %>
+    </div>
+  </div>
+<% end %>
+
+<%# Task status donut %>
+<% status_counts = Task.group(:status).count %>
+<% if status_counts.present? %>
+  <div class="container my-4">
+    <h2>Task Status (All Projects)</h2>
+    <%= pie_chart status_counts, donut: true, height: "240px" %>
+  </div>
+<% end %>
+
+<%# Tasks due next 7 days (show nothing if no due dates), %>
+<% due_series = Task.where.not(due_date: nil)
+                    .where(due_date: Date.current..7.days.from_now)
+                    .group_by_day(:due_date).count %>
+<% if due_series.present? %>
+  <div class="container my-4">
+    <h2 class="mt-4">Tasks Due (Next 7 Days)</h2>
+    <%= column_chart due_series, height: "240px" %>
+  </div>
+<% end %>
