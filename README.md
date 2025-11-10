@@ -67,6 +67,7 @@ To run automated tests and linting locally:
 
 bundle exec rspec
 bundle exec rubocop
+bundle exec brakeman
 
 CI/CD Pipeline
 This project uses GitHub Actions for continuous integration.
@@ -74,6 +75,8 @@ This project uses GitHub Actions for continuous integration.
 Runs RuboCop for linting.
 
 Runs RSpec for automated testing.
+
+Runs Brakeman for web vulnerabilities.
 
 Optionally deploys to Render after successful tests.
 
