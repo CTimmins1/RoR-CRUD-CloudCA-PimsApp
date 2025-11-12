@@ -67,3 +67,38 @@ yarn-debug.log*
 /storage/*
 !/storage/.keep
 /public/uploads
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+*.swp
+
+# Logs and temporary files
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+
+# Node / JS dependencies
+node_modules/
+dist/
+build/
+yarn-debug.log*
+yarn-error.log*
+
+# Compiled Rails / static assets
+/public/assets
+/public/packs
+/public/packs-test
+
+# Uploaded files
+/public/uploads
+/storage/*
+!/storage/.keep
+
+# Coverage / test output
+coverage/
+
+# Environment files (keep secrets local)
+.env
+.env*.local
