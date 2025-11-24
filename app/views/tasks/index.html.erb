@@ -1,0 +1,27 @@
+<%# app/views/tasks/index.html.erb %>
+
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Tasks" %>
+
+<h1>Tasks</h1>
+
+<div id="tasks">
+  <% @tasks.each do |task| %>
+    <%= render task %>
+    <p>
+      <%# FIX: Uses the nested array syntax [parent, child] %>
+      <%= link_to "Show this task", [task.project, task] %>
+    </p>
+    
+    <%# Add the Edit and Destroy links using nested helpers for a complete view %>
+    <p>
+      <%= link_to "Edit this task", edit_project_task_path(task.project, task) %>
+      <%= button_to "Destroy this task", project_task_path(task.project, task), method: :delete %>
+    </p>
+    <hr>
+  <% end %>
+</div>
+
+<%# FIX: Use the nested new_project_task_path and pass the parent project %>
+<%= link_to "New task", new_project_task_path(@project) %>

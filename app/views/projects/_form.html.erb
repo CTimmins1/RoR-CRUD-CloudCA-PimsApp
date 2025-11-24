@@ -1,0 +1,33 @@
+<%= form_with(model: project) do |form| %>
+  <% if project.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(project.errors.count, "error") %> prohibited this project from being saved:</h2>
+      <ul>
+        <% project.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :title, style: "display: block" %>
+    <%= form.text_field :title %>
+  </div>
+
+  <div>
+    <%= form.label :description, style: "display: block" %>
+    <%= form.text_area :description %> <%# Changed textarea to text_area for standard Rails helper %>
+  </div>
+
+  <div>
+    <%= form.label :status, style: "display: block" %>
+    <%# --- FIX HERE: Replaced form.number_field with a select tag --- %>
+    <%# This ensures only valid status strings ('pending', 'in_progress', 'completed') are submitted. %>
+    <%= form.select :status, Project.statuses.keys.map { |status_key| [status_key.humanize, status_key] } %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>

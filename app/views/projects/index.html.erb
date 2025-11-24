@@ -1,0 +1,38 @@
+<h1>Projects</h1>
+
+<%= link_to "New Project", new_project_path, class: "btn btn-primary mb-4" %>
+
+<div class="table-responsive">
+  <table class="table table-hover table-bordered">
+    <thead class="table-dark">
+      <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th colspan="3">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @projects.each do |project| %>
+        <tr>
+          <td><%= project.title %></td>
+          <td><%= truncate(project.description, length: 50) %></td>
+          <td>
+            <%# Apply badges based on status for visual feedback %>
+            <%= content_tag :span, project.status.humanize, class: "badge bg-#{project.status == 'completed' ? 'success' : project.status == 'in_progress' ? 'warning' : 'secondary'}" %>
+          </td>
+          <td><%= link_to "Show", project, class: "btn btn-sm btn-info text-white" %></td>
+          <td><%= link_to "Edit", edit_project_path(project), class: "btn btn-sm btn-secondary" %></td>
+          <td><%= button_to "Destroy", project, method: :delete, data: { confirm: 'Are you sure?' }, class: "btn btn-sm btn-danger" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+<div class="card mt-5 shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title text-center">Tasks per Project</h5>
+    <%= column_chart Project.joins(:tasks).group(:title).count, height: "400px", library: { title: { text: "Number of Tasks per Project" } } %>
+  </div>
+</div>
+
