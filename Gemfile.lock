@@ -403,7 +403,7 @@ DEPENDENCIES
   debug
   factory_bot_rails
   google_charts
-  groupdate
+  groupdate (~> 6.4)
   importmap-rails
   jbuilder
   kamal

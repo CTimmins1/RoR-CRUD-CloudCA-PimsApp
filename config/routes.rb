@@ -1,13 +1,16 @@
-# config/routes.rb (The correct structure)
-
 Rails.application.routes.draw do
-  # NEST TASKS INSIDE PROJECTS
-  resources :projects do
-    resources :tasks  # This creates URLs like /projects/:project_id/tasks/:id
+  namespace :api do
+    namespace :v1 do
+      resources :projects do
+        member do
+          get :stats        # /api/v1/projects/:id/stats
+        end
+
+        resources :tasks, shallow: true
+        # gives:
+        #   /api/v1/projects/:project_id/tasks
+        #   /api/v1/tasks/:id
+      end
+    end
   end
-
-  # Define the root path (Home page)
-  root "projects#index"
-
-  # ... rest of the boilerplate ...
 end
