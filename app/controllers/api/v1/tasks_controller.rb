@@ -1,20 +1,15 @@
 class Api::V1::TasksController < ApplicationController
- before_action :set_project
-  before_action :set_task, only: [:show, :update, :destroy]
+  before_action :set_project
+  before_action :set_task, only: [:update, :destroy]
 
   # GET /api/v1/projects/:project_id/tasks
   def index
     render json: @project.tasks
   end
 
-  # GET /api/v1/projects/:project_id/tasks/:id
-  def show
-    render json: @task
-  end
-
   # POST /api/v1/projects/:project_id/tasks
   def create
-    task = @project.tasks.new(task_params)
+    task = @project.tasks.build(task_params)
 
     if task.save
       render json: task, status: :created
@@ -42,17 +37,13 @@ class Api::V1::TasksController < ApplicationController
 
   def set_project
     @project = Project.find(params[:project_id])
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "Project not found" }, status: :not_found
   end
 
   def set_task
     @task = @project.tasks.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "Task not found" }, status: :not_found
   end
 
   def task_params
-    params.permit(:title, :description, :status)
+    params.permit(:title, :status, :priority)
   end
 end

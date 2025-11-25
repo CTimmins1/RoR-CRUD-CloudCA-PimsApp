@@ -3,8 +3,7 @@ class Api::V1::ProjectsController < ApplicationController
 
   # GET /api/v1/projects
   def index
-    projects = Project.all
-    render json: projects
+    render json: Project.all
   end
 
   # GET /api/v1/projects/:id
@@ -40,24 +39,17 @@ class Api::V1::ProjectsController < ApplicationController
 
   # GET /api/v1/projects/:id/stats
   def stats
-    tasks_scope = @project.tasks
+    project = @project
 
-    # requires the `groupdate` gem
-    tasks_per_day = tasks_scope
-                      .group_by_day(:created_at, time_zone: Time.zone)
-                      .count
-
-    tasks_per_status = tasks_scope.group(:status).count
-
-    completed_per_day = tasks_scope
-                          .where(status: "Completed")
-                          .group_by_day(:created_at, time_zone: Time.zone)
-                          .count
+    tasks_per_day    = project.tasks.group_by_day(:created_at, time_zone: "UTC").count
+    status_counts    = project.tasks.group(:status).count
+    priority_counts  = project.tasks.group(:priority).count
 
     render json: {
+      total_tasks: project.tasks.count,
       tasks_per_day: tasks_per_day,
-      tasks_per_status: tasks_per_status,
-      completed_per_day: completed_per_day
+      status_counts: status_counts,
+      priority_counts: priority_counts
     }
   end
 
@@ -65,11 +57,9 @@ class Api::V1::ProjectsController < ApplicationController
 
   def set_project
     @project = Project.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "Project not found" }, status: :not_found
   end
 
   def project_params
-    params.require(:project).permit(:title, :description, :status, :start_date, :end_date)
+    params.permit(:title, :description, :status)
   end
 end
