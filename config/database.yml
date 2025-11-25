@@ -61,7 +61,7 @@ test:
   host: localhost
   username: postgres
   password: password
-  url: ""
+
 
 
 # As with config/credentials.yml, you never want to store sensitive information,

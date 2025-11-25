@@ -43,8 +43,9 @@ jobs:
           PGHOST: localhost
           PGUSER: postgres
           PGPASSWORD: password
-          DATABASE_URL: ""
         run: |
+          unset DATABASE_URL
           bin/rails db:create
           bin/rails db:schema:load
+
 
