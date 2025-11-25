@@ -37,12 +37,14 @@ jobs:
           gem install bundler
           bundle install --jobs 4
 
-      -  name: Setup DB
-          env:
-            RAILS_ENV: test
-            PGHOST: localhost
-            PGUSER: postgres
-            PGPASSWORD: password
-          run: |
-            bin/rails db:create
-            bin/rails db:schema:load
+      - name: Setup DB
+        env:
+          RAILS_ENV: test
+          PGHOST: localhost
+          PGUSER: postgres
+          PGPASSWORD: password
+          DATABASE_URL: ""
+        run: |
+          bin/rails db:create
+          bin/rails db:schema:load
+
