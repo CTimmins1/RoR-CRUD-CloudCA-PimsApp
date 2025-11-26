@@ -1,37 +1,36 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function Signup() {
-  const [name, setName] = useState("");
+export default function Login() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
   const [message, setMessage] = useState("");
 
-  async function handleSignup(e) {
+  async function handleLogin(e) {
     e.preventDefault();
     setMessage("");
 
     try {
-      const response = await fetch("http://localhost:3000/api/v1/signup", {
+      const response = await fetch("http://localhost:3000/api/v1/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          password_confirmation: confirm
-        })
+        body: JSON.stringify({ email, password })
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.errors?.join(", ") || data.error || "Signup failed");
+        setMessage(data.error || "Login failed");
         return;
       }
 
       localStorage.setItem("token", data.token);
-      setMessage("Account created! You are now logged in.");
+
+      // redirect after successful login
+      navigate("/projects");
+
     } catch (err) {
       setMessage("Error: " + err.message);
     }
@@ -39,15 +38,9 @@ export default function Signup() {
 
   return (
     <div style={{ maxWidth: 400, margin: "40px auto" }}>
-      <h2>Create Account</h2>
+      <h2>Login</h2>
 
-      <form onSubmit={handleSignup}>
-        <input
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        /><br /><br />
-
+      <form onSubmit={handleLogin}>
         <input
           placeholder="Email"
           type="email"
@@ -62,14 +55,7 @@ export default function Signup() {
           onChange={(e) => setPassword(e.target.value)}
         /><br /><br />
 
-        <input
-          placeholder="Confirm Password"
-          type="password"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-        /><br /><br />
-
-        <button type="submit">Sign Up</button>
+        <button type="submit">Login</button>
       </form>
 
       {message && <p style={{ marginTop: 20 }}>{message}</p>}

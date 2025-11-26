@@ -6,7 +6,6 @@ import TaskPriorityChart from "./TaskPriorityChart";
 const API_URL = "http://localhost:3000/api/v1";
 
 export default function ProjectDetails({ project, goBack }) {
-  // Safety: if for some reason project is missing, don't blow up
   if (!project) {
     return (
       <div>
@@ -20,13 +19,22 @@ export default function ProjectDetails({ project, goBack }) {
   const [stats, setStats] = useState(null);
   const [form, setForm] = useState({ title: "", status: "pending" });
 
-  // Fetch tasks + stats whenever the selected project changes
+  const token = localStorage.getItem("token");
+  const authHeaders = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
+  };
+
   useEffect(() => {
-    fetch(`${API_URL}/projects/${project.id}/tasks`)
+    fetch(`${API_URL}/projects/${project.id}/tasks`, {
+      headers: authHeaders
+    })
       .then((res) => res.json())
       .then(setTasks);
 
-    fetch(`${API_URL}/projects/${project.id}/stats`)
+    fetch(`${API_URL}/projects/${project.id}/stats`, {
+      headers: authHeaders
+    })
       .then((res) => res.json())
       .then(setStats);
   }, [project.id]);
@@ -36,7 +44,7 @@ export default function ProjectDetails({ project, goBack }) {
 
     fetch(`${API_URL}/projects/${project.id}/tasks`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders,
       body: JSON.stringify(form),
     })
       .then((res) => res.json())
@@ -44,8 +52,9 @@ export default function ProjectDetails({ project, goBack }) {
         setTasks([...tasks, task]);
         setForm({ title: "", status: "pending" });
 
-        // refresh stats for the charts
-        fetch(`${API_URL}/projects/${project.id}/stats`)
+        fetch(`${API_URL}/projects/${project.id}/stats`, {
+          headers: authHeaders
+        })
           .then((res) => res.json())
           .then(setStats);
       });
@@ -56,11 +65,13 @@ export default function ProjectDetails({ project, goBack }) {
 
     fetch(`${API_URL}/projects/${project.id}/tasks/${taskId}`, {
       method: "DELETE",
+      headers: authHeaders
     }).then(() => {
       setTasks(tasks.filter((t) => t.id !== taskId));
 
-      // refresh stats after delete
-      fetch(`${API_URL}/projects/${project.id}/stats`)
+      fetch(`${API_URL}/projects/${project.id}/stats`, {
+        headers: authHeaders
+      })
         .then((res) => res.json())
         .then(setStats);
     });
@@ -71,26 +82,26 @@ export default function ProjectDetails({ project, goBack }) {
     if (!newTitle) return;
 
     const newStatus = window.prompt(
-      "New status (pending / active / complete):",
+      "New status (pending / in_progress / completed):",
       task.status
     );
     if (!newStatus) return;
 
     fetch(`${API_URL}/projects/${project.id}/tasks/${task.id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders,
       body: JSON.stringify({
         title: newTitle,
         status: newStatus,
-        // add priority here if you want to edit it from the UI too
       }),
     })
       .then((res) => res.json())
       .then((updated) => {
         setTasks(tasks.map((t) => (t.id === updated.id ? updated : t)));
 
-        // refresh stats after edit
-        fetch(`${API_URL}/projects/${project.id}/stats`)
+        fetch(`${API_URL}/projects/${project.id}/stats`, {
+          headers: authHeaders
+        })
           .then((res) => res.json())
           .then(setStats);
       });
@@ -126,8 +137,8 @@ export default function ProjectDetails({ project, goBack }) {
           onChange={(e) => setForm({ ...form, status: e.target.value })}
         >
           <option value="pending">Pending</option>
-          <option value="active">Active</option>
-          <option value="complete">Complete</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
         </select>
         <br />
         <button type="submit">Add Task</button>

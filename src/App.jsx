@@ -1,23 +1,28 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
+import Projects from "./pages/Projects";
+import RequireAuth from "./components/RequireAuth";
 
-import { useState } from "react";
-import ProjectsList from "./components/ProjectsList";
-import ProjectDetails from "./components/ProjectDetails";
-
-export default function App() {
-  const [selectedProject, setSelectedProject] = useState(null);
-
+function App() {
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>PIMS – Project Management System</h1>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
 
-      {!selectedProject ? (
-        <ProjectsList onSelectProject={setSelectedProject} />
-      ) : (
-        <ProjectDetails
-          project={selectedProject}
-          goBack={() => setSelectedProject(null)}
+        <Route
+          path="/projects"
+          element={
+            <RequireAuth>
+              <Projects />
+            </RequireAuth>
+          }
         />
-      )}
-    </div>
+      </Routes>
+    </BrowserRouter>
   );
 }
+
+export default App;
