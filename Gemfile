@@ -25,8 +25,9 @@ gem "chartkick"
 # Google_charts model
 gem "google_charts"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
-# gem "bcrypt", "~> 3.1.7"
-
+# Adding both bcrypt && jwt below for the auth section of my project.
+gem 'bcrypt'
+gem 'jwt'
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
