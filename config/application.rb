@@ -14,4 +14,8 @@ module PimsApp
     config.api_only = true
     config.autoload_paths << Rails.root.join('app/lib')
   end
+ENV["PGUSER"] = "pims_user"
+ENV["PGPASSWORD"] = "password123"
+ENV["PGHOST"] = "localhost"
+
 end
