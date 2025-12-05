@@ -1,33 +1,26 @@
 class Api::V1::TasksController < ApplicationController
-  before_action :set_project
+  before_action :authenticate_request
   before_action :set_task, only: [:update, :destroy]
 
-  # GET /api/v1/projects/:project_id/tasks
-  def index
-    render json: @project.tasks
-  end
-
-  # POST /api/v1/projects/:project_id/tasks
   def create
-    task = @project.tasks.build(task_params)
+    project = current_user.projects.find(params[:project_id])
+    task = project.tasks.build(task_params.merge(user_id: current_user.id))
 
     if task.save
-      render json: task, status: :created
+      render json: task, status: :created    # <-- AMS takes over
     else
       render json: { errors: task.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /api/v1/projects/:project_id/tasks/:id
   def update
     if @task.update(task_params)
-      render json: @task
+      render json: @task                     # <-- AMS takes over
     else
       render json: { errors: @task.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
-  # DELETE /api/v1/projects/:project_id/tasks/:id
   def destroy
     @task.destroy
     head :no_content
@@ -35,15 +28,11 @@ class Api::V1::TasksController < ApplicationController
 
   private
 
-  def set_project
-    @project = Project.find(params[:project_id])
-  end
-
   def set_task
-    @task = @project.tasks.find(params[:id])
+    @task = current_user.tasks.find(params[:id])
   end
 
   def task_params
-    params.permit(:title, :status, :priority)
+    params.require(:task).permit(:title, :priority, :status)
   end
 end

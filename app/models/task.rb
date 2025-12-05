@@ -1,9 +1,6 @@
-# app/models/task.rb
 class Task < ApplicationRecord
-  # A Task belongs to a Project
   belongs_to :project
 
-  # ENUMS — These MUST match the values coming from your frontend
   enum :status, {
     pending: 0,
     in_progress: 1,
@@ -16,13 +13,27 @@ class Task < ApplicationRecord
     high: 2
   }
 
-  # Default values for new tasks
   after_initialize :set_defaults, if: :new_record?
 
-  # Validations
   validates :title, presence: true
   validates :status, presence: true
   validates :priority, presence: true
+
+  def priority_value
+  self[:priority]   # returns integer 0/1/2
+  end
+
+  def status_value
+  self[:status]     # returns integer 0/1/2
+  end
+
+  #Ensure API responses return integer enum values
+  def as_json(options = {})
+    super(options).merge(
+      priority: self[:priority],
+      status: self[:status]
+    )
+  end
 
   private
 

@@ -1,40 +1,69 @@
 class Project < ApplicationRecord
-  # A Project can have many Tasks, and destroying a project destroys its tasks.
+  # Each project belongs to a user and contains many tasks.
   belongs_to :user
   has_many :tasks, dependent: :destroy
 
-  # Define the integer status column as a readable enum
-  # NOTE: The Project status is separate from the Task status.
+  # ---------------------------------------------------------------------
+  # Status Enum
+  # Maps project status to integer values stored in the database.
+  #
+  # These integer values must match what the frontend expects:
+  #   0 = pending      (frontend treats as "To Do")
+  #   1 = in_progress  (frontend treats as "In Progress")
+  #   2 = completed    (frontend treats as "Completed")
+  #
+  # NOTE:
+  # Rails stores the integer, but returns the status name as a string
+  # (e.g., project.status => "pending").
+  # Frontend consumes project[:status] which returns the integer.
+  # ---------------------------------------------------------------------
   enum :status, { pending: 0, in_progress: 1, completed: 2 }
 
-  # TDD: Add validation for a presence of a title
+  # Title should always be present
   validates :title, presence: true
 
-  # -------------------------------------------------------------
-  # 1. CLASS METHOD: Gets the status counts for *ALL* Projects
-  # (Less common for dashboards, more useful for high-level reports)
-  # -------------------------------------------------------------
-  def self.status_counts
-    # 1. Query the database for counts of all projects grouped by status integer
-    raw_counts = group(:status).count
+  # ---------------------------------------------------------------------
+  # Assign a default status to new project objects.
+  #
+  # This prevents NULL values in the database, which previously caused
+  # the pie chart to fail (Recharts cannot group NULL into known buckets).
+  #
+  # Only executes on NEW records and only if the status column exists.
+  # ---------------------------------------------------------------------
+  after_initialize do
+    # If the record is new and status is nil, assign default state.
+    self.status ||= :pending if has_attribute?(:status)
+  end
 
-    # 2. Format the data for Chartkick: convert the integer key back to a human-readable string.
+  # ---------------------------------------------------------------------
+  # CLASS METHOD:
+  # Returns a list of all project status counts formatted for analytics.
+  #
+  # Example output:
+  #   [["Pending", 5], ["In progress", 3], ["Completed", 2]]
+  #
+  # Useful for general statistics dashboards.
+  # ---------------------------------------------------------------------
+  def self.status_counts
+    raw_counts = group(:status).count
     raw_counts.map do |status_enum_int, count|
-      # Project.statuses is the enum map, .key() gets the symbol name, .humanize makes it readable
-      [ Project.statuses.key(status_enum_int).humanize, count ]
+      [
+        Project.statuses.key(status_enum_int).humanize,  # readable label
+        count                                           # number of projects
+      ]
     end
   end
 
-  # -------------------------------------------------------------
-  # 2. INSTANCE METHOD: Gets the status counts for *THIS PROJECT'S TASKS*
-  # (CRUCIAL for the Project Dashboard Chart)
-  # -------------------------------------------------------------
+  # ---------------------------------------------------------------------
+  # INSTANCE METHOD:
+  # Returns the count of tasks per status *for this specific project*.
+  #
+  # Example output:
+  #   { 0 => 3, 1 => 2, 2 => 1 }
+  #
+  # Frontend can translate these integers via Task.statuses.
+  # ---------------------------------------------------------------------
   def task_status_counts
-    # Use the 'tasks' association to scope the query
-    # NOTE: This assumes your Task model also has a status enum defined (e.g., Task.statuses)
     tasks.group(:status).count
-    # Since tasks.group(:status).count returns the map in the format {integer => count},
-    # Chartkick can often handle this directly if the Task model is consistent.
-    # If not, you might need to map it similarly to self.status_counts, using Task.statuses.
   end
 end
