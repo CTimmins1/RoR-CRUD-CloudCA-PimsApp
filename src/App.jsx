@@ -1,28 +1,16 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
-import Projects from "./pages/Projects";
-import RequireAuth from "./components/RequireAuth";
+import { Routes, Route } from "react-router-dom";
+import Login from "./pages/Login.jsx";
+import Projects from "./pages/Projects.jsx";
+import ProjectShow from "./pages/ProjectShow.jsx";
+import RequireAuth from "./components/RequireAuth.jsx";
 
-function App() {
+export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-
-        <Route
-          path="/projects"
-          element={
-            <RequireAuth>
-              <Projects />
-            </RequireAuth>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<RequireAuth><Projects /></RequireAuth>} />
+      <Route path="/projects" element={<RequireAuth><Projects /></RequireAuth>} />
+      <Route path="/projects/:id" element={<RequireAuth><ProjectShow /></RequireAuth>} />
+    </Routes>
   );
 }
-
-export default App;
