@@ -1,5 +1,6 @@
 class Project < ApplicationRecord
   # A Project can have many Tasks, and destroying a project destroys its tasks.
+  belongs_to :user
   has_many :tasks, dependent: :destroy
 
   # Define the integer status column as a readable enum
