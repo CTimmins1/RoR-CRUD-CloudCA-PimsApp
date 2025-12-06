@@ -41,7 +41,7 @@ export default function Login() {
               PIMS
             </h1>
             <p className="text-gray-600 mt-2 text-lg font-medium">
-              Property Information Management System
+              Project Intelligence Management System
             </p>
           </div>
 

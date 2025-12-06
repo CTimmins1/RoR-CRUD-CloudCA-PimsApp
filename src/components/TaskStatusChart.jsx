@@ -1,33 +1,35 @@
-import { PieChart, Pie, Tooltip, Legend, Cell } from "recharts";
-
-const COLORS = ["#fbbf24", "#3b82f6", "#22c55e", "#ef4444"];
+import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
 export default function TaskStatusChart({ stats }) {
-  if (!stats || !stats.status_counts) return <p>No status data yet.</p>;
+  if (!stats || !stats.status_counts) return null;
 
-  const entries = Object.entries(stats.status_counts);
-  if (entries.length === 0) return <p>No status data yet.</p>;
+  const COLORS = {
+    pending: "#F59E0B",
+    in_progress: "#3B82F6",
+    completed: "#10B981"
+  };
 
-  const data = entries.map(([status, count]) => ({
-    name: status,
-    value: count,
+  const data = Object.entries(stats.status_counts).map(([key, value]) => ({
+    name: key.replace("_", " ").toUpperCase(),
+    value,
+    color: COLORS[key],
   }));
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
+    <div style={{ marginTop: "2rem" }}>
       <h3>Tasks by Status</h3>
-      <PieChart width={400} height={260}>
+
+      <PieChart width={450} height={260}>
         <Pie
           data={data}
-          dataKey="value"
-          nameKey="name"
           cx="50%"
           cy="50%"
-          outerRadius={80}
+          outerRadius={90}
           label
+          dataKey="value"
         >
           {data.map((entry, index) => (
-            <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
+            <Cell key={index} fill={entry.color} />
           ))}
         </Pie>
         <Tooltip />
