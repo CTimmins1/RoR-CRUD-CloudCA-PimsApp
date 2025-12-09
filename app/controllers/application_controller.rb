@@ -6,18 +6,25 @@ class ApplicationController < ActionController::API
   private
 
   def authenticate_request
-    header = request.headers["Authorization"]
-    token = header&.split(" ")&.last
+    # Rails normalizes headers → "Authorization" becomes "HTTP_AUTHORIZATION"
+    header = request.headers["HTTP_AUTHORIZATION"]
+    token  = header&.split(" ")&.last
 
-    if token
-      begin
-        decoded = JsonWebToken.decode(token)
-        @current_user = User.find(decoded[:user_id])
-      rescue
-        render json: { error: "Unauthorized" }, status: :unauthorized
-      end
-    else
-      render json: { error: "Missing token" }, status: :unauthorized
+    unless token
+      return render json: { error: "Missing token" }, status: :unauthorized
+    end
+
+    decoded = JsonWebToken.decode(token)
+    unless decoded
+      return render json: { error: "Invalid token" }, status: :unauthorized
+    end
+
+    # decoded keys might be strings or symbols
+    user_id = decoded["user_id"] || decoded[:user_id]
+
+    @current_user = User.find_by(id: user_id)
+    unless @current_user
+      return render json: { error: "User not found" }, status: :unauthorized
     end
   end
 end

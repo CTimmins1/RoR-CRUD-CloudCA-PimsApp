@@ -2,6 +2,18 @@ class Api::V1::TasksController < ApplicationController
   before_action :authenticate_request
   before_action :set_task, only: [:update, :destroy]
 
+  def index
+  project = current_user.projects.find(params[:project_id])
+  tasks = project.tasks
+  render json: tasks, status: :ok
+  end
+
+  def show
+  project = current_user.projects.find(params[:project_id])
+  task = project.tasks.find(params[:id])
+  render json: task, status: :ok
+  end
+
   def create
     project = current_user.projects.find(params[:project_id])
     task = project.tasks.build(task_params.merge(user_id: current_user.id))
