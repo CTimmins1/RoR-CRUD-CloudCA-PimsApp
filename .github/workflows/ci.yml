@@ -1,57 +1,71 @@
 name: CI
 
 on:
-  pull_request:
   push:
     branches: [ main ]
+  pull_request:
 
 jobs:
-
-  # --------------------------
-  # Ruby Security Scan
-  # --------------------------
+  # ------------------------------------------
+  # Ruby Backend Security Scan - Brakeman
+  # ------------------------------------------
   scan_ruby:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pims-backend
     steps:
       - uses: actions/checkout@v4
+
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'   # Direct version avoids GH failure
+          ruby-version: 3.2
           bundler-cache: true
-      - name: Brakeman (security scan)
+
+      - name: Brakeman Security Scan
         run: bundle exec brakeman -A --no-pager
 
-  # --------------------------
-  # JS Security Scan (Importmap)
-  # --------------------------
+  # ------------------------------------------
+  # JS Security Scan - Importmap Audit
+  # ------------------------------------------
   scan_js:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pims-backend
     steps:
       - uses: actions/checkout@v4
+
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: 3.2
           bundler-cache: true
-      - name: Importmap audit
+
+      - name: Importmap Audit
         run: bin/importmap audit
 
-  # --------------------------
-  # Ruby Linting (Rubocop)
-  # --------------------------
-  lint:
+  # ------------------------------------------
+  # Lint Ruby Code - Rubocop
+  # ------------------------------------------
+  lint_ruby:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pims-backend
     steps:
       - uses: actions/checkout@v4
+
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: 3.2
           bundler-cache: true
-      - name: RuboCop
+
+      - name: Run Rubocop
         run: bundle exec rubocop -f github
 
-   # --------------------------
-  # Rails Backend Tests
-  # --------------------------
+  # ------------------------------------------
+  # Backend Tests: RSpec + SimpleCov
+  # ------------------------------------------
   test_backend:
     runs-on: ubuntu-latest
 
@@ -69,42 +83,41 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+    defaults:
+      run:
+        working-directory: pims-backend
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: 3.2
           bundler-cache: true
 
       - name: Setup DB
         env:
-          RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+          RAILS_ENV: test
         run: |
           bin/rails db:create
           bin/rails db:schema:load
 
-      - name: Run RSpec (with SimpleCov)
+      - name: Run RSpec
         env:
           RAILS_ENV: test
         run: bundle exec rspec --format documentation
 
-      - name: Upload SimpleCov coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage/
-
-
-  # --------------------------
-  # React Frontend Tests
-  # --------------------------
+  # ------------------------------------------
+  # Frontend Tests: Vitest + Caching
+  # ------------------------------------------
   test_frontend:
     runs-on: ubuntu-latest
+
     defaults:
       run:
-        working-directory: frontend   # <-- Adjust if your frontend folder is named differently
+        working-directory: pims-frontend
+
     steps:
       - uses: actions/checkout@v4
 
@@ -113,14 +126,13 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: pims-frontend/package-lock.json
 
-      - name: Install Node dependencies
+      - name: Install deps
         run: npm install
 
-      - name: Run frontend tests
+      - name: Run Vitest
         run: npm test --if-present
 
-      # Ensure frontend builds correctly
-      - name: Build frontend
+      - name: Frontend Build Check
         run: npm run build
