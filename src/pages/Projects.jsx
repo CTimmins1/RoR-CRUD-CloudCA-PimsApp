@@ -21,7 +21,7 @@ export default function Projects() {
   const loadProjects = async () => {
     try {
       const res = await fetch("http://localhost:3000/api/v1/projects", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("jwt")}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
       
@@ -43,7 +43,7 @@ export default function Projects() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ project: { title: newName.trim() } }),
       });
@@ -65,7 +65,7 @@ export default function Projects() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ project: { title: editName.trim() } }),
       });
@@ -84,7 +84,7 @@ export default function Projects() {
 
     await fetch(`http://localhost:3000/api/v1/projects/${id}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${localStorage.getItem("jwt")}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
 
     setProjects(projects.filter((p) => p.id !== id));
@@ -101,7 +101,7 @@ export default function Projects() {
           </h1>
           <button
             onClick={() => {
-              localStorage.removeItem("jwt");
+              localStorage.removeItem("token");
               navigate("/login");
             }}
             className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl flex items-center gap-3"

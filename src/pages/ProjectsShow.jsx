@@ -30,7 +30,7 @@ export default function ProjectShow() {
   const loadProject = async () => {
     try {
       const res = await fetch(`http://localhost:3000/api/v1/projects/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("jwt")}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
 
       const data = await res.json();
@@ -55,7 +55,7 @@ export default function ProjectShow() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
           task: { title: newTaskTitle.trim(), priority: 0 },
@@ -82,7 +82,7 @@ export default function ProjectShow() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
           task: {
@@ -117,7 +117,7 @@ export default function ProjectShow() {
 
     await fetch(`http://localhost:3000/api/v1/tasks/${taskId}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${localStorage.getItem("jwt")}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
 
     setProject({

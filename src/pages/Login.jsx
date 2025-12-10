@@ -25,7 +25,7 @@ export default function Login() {
 
     if (!response.ok) throw new Error(data.error || "Login failed");
 
-    localStorage.setItem("jwt", data.jwt);
+    localStorage.setItem("token", data.token);
     window.location.href = "/projects";
   } catch (err) {
     setMessage("Wrong email/password or backend down");
