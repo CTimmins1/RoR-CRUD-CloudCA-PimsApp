@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main,pims-backend ]
   pull_request:
 
 jobs:
@@ -96,12 +96,16 @@ jobs:
           bundler-cache: true
 
       - name: Setup DB
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
-          RAILS_ENV: test
-        run: |
-          bin/rails db:create
-          bin/rails db:schema:load
+  env:
+    RAILS_ENV: test
+    PGHOST: localhost
+    PGUSER: postgres
+    PGPASSWORD: postgres
+  run: |
+    unset DATABASE_URL
+    bin/rails db:create
+    bin/rails db:schema:load
+
 
       - name: Run RSpec
         env:
