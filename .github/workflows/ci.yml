@@ -89,8 +89,8 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: password
         run: |
-          bin/rails db:create
-          bin/rails db:schema:load
+          bin/rails db:prepare
+
 
       - name: Run RSpec
         env:

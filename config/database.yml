@@ -27,11 +27,12 @@ development:
 test:
   adapter: postgresql
   encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
   database: pims_app_test
-  host: <%= ENV.fetch("PGHOST", "localhost") %>
+  pool: 5
   username: <%= ENV.fetch("PGUSER", "postgres") %>
-  password: <%= ENV.fetch("PGPASSWORD", "") %>
+  password: <%= ENV.fetch("PGPASSWORD", "password") %>
+  host: <%= ENV.fetch("PGHOST", "localhost") %>
+
 
 
 
