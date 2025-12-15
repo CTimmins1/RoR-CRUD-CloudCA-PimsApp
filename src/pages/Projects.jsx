@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Plus, Trash2, Edit2 } from "lucide-react";
+import { apiRequest } from "../api";
 
-// Import charts for project analytics
+// Charts
 import ProjectOverviewCharts from "../components/ProjectOverviewCharts";
 
 export default function Projects() {
@@ -12,43 +13,30 @@ export default function Projects() {
   const [editName, setEditName] = useState("");
   const navigate = useNavigate();
 
-  // Load projects on initial page render
   useEffect(() => {
     loadProjects();
   }, []);
 
-  // Fetch all projects belonging to the authenticated user
+  // Fetch projects
   const loadProjects = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/v1/projects", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      const data = await res.json();
-      
-      // Log to verify if backend provides status + tasks_count
+      const data = await apiRequest("/projects");
       console.log("Loaded projects:", data);
-      
       setProjects(data);
     } catch (err) {
-      console.log("Failed to load projects");
+      console.error("Failed to load projects:", err.message);
     }
   };
 
-  // Create a new project
+  // Create project
   const createProject = async () => {
     if (!newName.trim()) return;
 
     try {
-      const res = await fetch("http://localhost:3000/api/v1/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ project: { title: newName.trim() } }),
+      const data = await apiRequest("/projects", "POST", {
+        project: { title: newName.trim() },
       });
 
-      const data = await res.json();
       setProjects([...projects, data]);
       setNewName("");
     } catch (err) {
@@ -56,21 +44,15 @@ export default function Projects() {
     }
   };
 
-  // Update a project's name
+  // Update project
   const updateProject = async (id) => {
     if (!editName.trim()) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/projects/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ project: { title: editName.trim() } }),
+      const data = await apiRequest(`/projects/${id}`, "PATCH", {
+        project: { title: editName.trim() },
       });
 
-      const data = await res.json();
       setProjects(projects.map((p) => (p.id === id ? data : p)));
       setEditingId(null);
     } catch (err) {
@@ -78,27 +60,28 @@ export default function Projects() {
     }
   };
 
-  // Delete a project
+  // Delete project
   const deleteProject = async (id) => {
     if (!confirm("Delete this project?")) return;
 
-    await fetch(`http://localhost:3000/api/v1/projects/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-
-    setProjects(projects.filter((p) => p.id !== id));
+    try {
+      await apiRequest(`/projects/${id}`, "DELETE");
+      setProjects(projects.filter((p) => p.id !== id));
+    } catch {
+      alert("Delete failed");
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-12">
       <div className="max-w-7xl mx-auto">
 
-        {/* Header / navigation section */}
+        {/* Header */}
         <div className="flex justify-between items-center mb-12">
           <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
             PIMS
           </h1>
+
           <button
             onClick={() => {
               localStorage.removeItem("token");
@@ -110,15 +93,15 @@ export default function Projects() {
           </button>
         </div>
 
-        {/* New project creation section */}
-        <div className="bg-white/90 backdrop-blur rounded-3xl shadow-2xl p-10 mb-12">
+        {/* Create project */}
+        <div className="bg-white/90 rounded-3xl shadow-2xl p-10 mb-12">
           <h2 className="text-4xl font-bold mb-8">Create New Project</h2>
 
           <div className="flex gap-6">
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && createProject()}
+              onKeyDown={(e) => e.key === "Enter" && createProject()}
               placeholder="project name"
               className="flex-1 px-8 py-5 text-xl border-2 rounded-2xl"
             />
@@ -132,36 +115,29 @@ export default function Projects() {
           </div>
         </div>
 
-        {/* Dashboard charts showing project analytics */}
-        <div className="bg-white/90 backdrop-blur rounded-3xl shadow-2xl p-10 mb-12">
+        {/* Charts */}
+        <div className="bg-white/90 rounded-3xl shadow-2xl p-10 mb-12">
           <h2 className="text-4xl font-bold mb-8">Project Overview</h2>
-          
-          {/* Charts only render when projects are available */}
           <ProjectOverviewCharts projects={projects} />
         </div>
 
-        {/* Project cards (interactive grid) */}
+        {/* Project cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
           {projects.map((project) => (
             <div
               key={project.id}
-              className="group bg-white rounded-3xl shadow-2xl hover:shadow-3xl transition transform hover:-translate-y-4"
+              className="group bg-white rounded-3xl shadow-2xl hover:-translate-y-4 transition"
             >
-              {/* Project banner */}
               <div
                 onClick={() => navigate(`/projects/${project.id}`)}
                 className="cursor-pointer h-48 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-t-3xl"
-              ></div>
+              />
 
-              {/* Project content */}
               <div className="p-8">
-
-                {/* Edit mode for title */}
                 {editingId === project.id ? (
                   <input
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && updateProject(project.id)}
                     onBlur={() => updateProject(project.id)}
                     className="text-2xl font-bold w-full mb-4 px-4 py-2 border-2 rounded-xl"
                     autoFocus
@@ -172,40 +148,33 @@ export default function Projects() {
                   </h3>
                 )}
 
-                {/* Interaction controls */}
                 <div className="flex justify-between items-center">
                   <button
                     onClick={() => navigate(`/projects/${project.id}`)}
-                    className="text-indigo-600 hover:text-indigo-800 font-medium"
+                    className="text-indigo-600 font-medium"
                   >
                     View Tasks
                   </button>
 
                   <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      onClick={() => {
                         setEditingId(project.id);
                         setEditName(project.title || project.name);
                       }}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="text-blue-600"
                     >
                       <Edit2 size={24} />
                     </button>
 
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteProject(project.id);
-                      }}
-                      className="text-red-600 hover:text-red-800"
+                      onClick={() => deleteProject(project.id)}
+                      className="text-red-600"
                     >
                       <Trash2 size={24} />
                     </button>
                   </div>
-
                 </div>
-
               </div>
             </div>
           ))}

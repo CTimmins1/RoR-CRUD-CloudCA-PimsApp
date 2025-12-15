@@ -3,74 +3,59 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, Edit2 } from "lucide-react";
+import { apiRequest } from "../api";
 
-// Chart components for visualising task distribution
+// Charts
 import TaskPriorityChart from "../components/TaskPriorityChart";
 import TaskStatusChart from "../components/TaskStatusChart";
 
 export default function ProjectShow() {
   const { id } = useParams();
-  const [project, setProject] = useState(null);
+  const navigate = useNavigate();
 
-  // Local state for task creation + editing
+  const [project, setProject] = useState(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
   const [editPriority, setEditPriority] = useState(0);
-  const [editStatus, setEditStatus] = useState(0); // required for task status edits
+  const [editStatus, setEditStatus] = useState(0);
 
-  const navigate = useNavigate();
-
-  // Fetch project data on mount or when project ID changes
   useEffect(() => {
     loadProject();
   }, [id]);
 
-  // Retrieve the project, its tasks, and all metadata needed for rendering
+  // Load project + tasks
   const loadProject = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/projects/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-
-      const data = await res.json();
-
-      // Basic sanity logging for visibility during development
-      console.log("Loaded project:", data);
-      console.log("Tasks:", data.tasks);
-
+      const data = await apiRequest(`/projects/${id}`);
       setProject(data);
-    } catch (err) {
+    } catch {
       alert("Project not found");
       navigate("/projects");
     }
   };
 
-  // Create a new task and inject it into local state
+  // Create task
   const createTask = async () => {
     if (!newTaskTitle.trim()) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/projects/${id}/tasks`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          task: { title: newTaskTitle.trim(), priority: 0 },
-        }),
+      const newTask = await apiRequest(`/projects/${id}/tasks`, "POST", {
+        task: { title: newTaskTitle.trim(), priority: 0 },
       });
 
-      const newTask = await res.json();
-      setProject({ ...project, tasks: [...project.tasks, newTask] });
+      setProject({
+        ...project,
+        tasks: [...project.tasks, newTask],
+      });
+
       setNewTaskTitle("");
-    } catch (err) {
+    } catch {
       alert("Task creation failed");
     }
   };
 
-  // Update an existing task (title, priority, status)
+  // Update task
   const updateTask = async (taskId) => {
     if (!editTitle.trim()) {
       alert("Title cannot be empty");
@@ -78,26 +63,14 @@ export default function ProjectShow() {
     }
 
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/tasks/${taskId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+      const updatedTask = await apiRequest(`/tasks/${taskId}`, "PATCH", {
+        task: {
+          title: editTitle.trim(),
+          priority: editPriority,
+          status: editStatus,
         },
-        body: JSON.stringify({
-          task: {
-            title: editTitle.trim(),
-            priority: editPriority,
-            status: editStatus,
-          },
-        }),
       });
 
-      if (!res.ok) throw new Error("Update failed");
-
-      const updatedTask = await res.json();
-
-      // Replace the edited task locally without re-fetching the full project
       setProject({
         ...project,
         tasks: project.tasks.map((t) =>
@@ -106,87 +79,90 @@ export default function ProjectShow() {
       });
 
       setEditingTaskId(null);
-    } catch (err) {
-      alert("Update failed — title cannot be blank");
+    } catch {
+      alert("Update failed");
     }
   };
 
-  // Delete a task and remove it from local state
+  // Delete task
   const deleteTask = async (taskId) => {
     if (!confirm("Delete task?")) return;
 
-    await fetch(`http://localhost:3000/api/v1/tasks/${taskId}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
+    try {
+      await apiRequest(`/tasks/${taskId}`, "DELETE");
 
-    setProject({
-      ...project,
-      tasks: project.tasks.filter((t) => t.id !== taskId),
-    });
+      setProject({
+        ...project,
+        tasks: project.tasks.filter((t) => t.id !== taskId),
+      });
+    } catch {
+      alert("Delete failed");
+    }
   };
 
-  // Early return to avoid undefined access before project loads
-  if (!project)
+  if (!project) {
     return <div className="p-20 text-center text-3xl">Loading...</div>;
+  }
 
-  // Aggregate task stats to drive both charts (priority + status)
+  // Build stats for charts
   const buildTaskStats = (tasks = []) => {
     const priority_counts = { low: 0, medium: 0, high: 0 };
     const status_counts = { pending: 0, in_progress: 0, completed: 0 };
 
     tasks.forEach((t) => {
-      // Priority classification
-      if (t.priority === 0 || t.priority === "low") priority_counts.low++;
-      else if (t.priority === 1 || t.priority === "medium") priority_counts.medium++;
-      else priority_counts.high++;
+      const priority =
+        typeof t.priority === "number"
+          ? ["low", "medium", "high"][t.priority]
+          : t.priority;
 
-      // Status classification
-      if (t.status === 0 || t.status === "pending") status_counts.pending++;
-      else if (t.status === 1 || t.status === "in_progress") status_counts.in_progress++;
-      else status_counts.completed++;
+      if (priority_counts[priority] !== undefined) {
+        priority_counts[priority]++;
+      }
+
+      const status =
+        typeof t.status === "number"
+          ? ["pending", "in_progress", "completed"][t.status]
+          : t.status;
+
+      if (status_counts[status] !== undefined) {
+        status_counts[status]++;
+      }
     });
 
     return { priority_counts, status_counts };
   };
 
-  // Compute chart-ready stats based on current task list
   const stats = buildTaskStats(project.tasks || []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-12">
       <div className="max-w-6xl mx-auto">
 
-        {/* Page nav / back button */}
         <button
           onClick={() => navigate("/projects")}
-          className="flex items-center gap-3 mb-8 text-indigo-600 hover:text-indigo-800 text-xl"
+          className="flex items-center gap-3 mb-8 text-indigo-600 text-xl"
         >
           <ArrowLeft size={28} /> Back to Projects
         </button>
 
-        {/* Project title */}
         <h1 className="text-6xl font-black mb-12">
           {project.title || project.name}
         </h1>
 
-        <div className="bg-white/90 backdrop-blur rounded-3xl shadow-2xl p-10">
+        <div className="bg-white rounded-3xl shadow-2xl p-10">
 
-          {/* Section heading */}
           <h2 className="text-4xl font-bold mb-8">Tasks</h2>
 
-          {/* Data visualisation layer */}
           <div className="grid grid-cols-2 gap-12 mb-12">
             <TaskPriorityChart stats={stats} />
             <TaskStatusChart stats={stats} />
           </div>
 
-          {/* Task creation UI */}
           <div className="flex gap-6 mb-10">
             <input
               value={newTaskTitle}
               onChange={(e) => setNewTaskTitle(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && createTask()}
+              onKeyDown={(e) => e.key === "Enter" && createTask()}
               placeholder="add new task..."
               className="flex-1 px-8 py-5 border-2 rounded-2xl"
             />
@@ -199,109 +175,122 @@ export default function ProjectShow() {
             </button>
           </div>
 
-          {/* Task list rendering */}
           <div className="space-y-6">
-            {project.tasks?.length === 0 ? (
+            {project.tasks.length === 0 ? (
               <p className="text-center text-xl text-gray-500 py-20">
                 No tasks yet — add one above!
               </p>
             ) : (
-              project.tasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="bg-gray-50 p-6 rounded-2xl flex justify-between items-center"
-                >
+              project.tasks.map((task) => {
+                const priorityLabel =
+                  typeof task.priority === "number"
+                    ? ["Low", "Medium", "High"][task.priority]
+                    : task.priority
+                      ?.charAt(0)
+                      .toUpperCase() + task.priority?.slice(1);
 
-                  {/* Editing mode */}
-                  {editingTaskId === task.id ? (
-                    <div className="flex gap-4 flex-1 items-center">
-                      <input
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        className="flex-1 px-4 py-2 border rounded-xl"
-                      />
+                const statusLabel =
+                  typeof task.status === "number"
+                    ? ["Pending", "In Progress", "Completed"][task.status]
+                    : task.status
+                      ?.replace("_", " ")
+                      .replace(/\b\w/g, (c) => c.toUpperCase());
 
-                      {/* Priority selector */}
-                      <select
-                        value={editPriority}
-                        onChange={(e) => setEditPriority(Number(e.target.value))}
-                        className="px-4 py-2 border rounded-xl"
-                      >
-                        <option value={0}>Low</option>
-                        <option value={1}>Medium</option>
-                        <option value={2}>High</option>
-                      </select>
+                return (
+                  <div
+                    key={task.id}
+                    className="bg-gray-50 p-6 rounded-2xl flex justify-between items-center"
+                  >
+                    {editingTaskId === task.id ? (
+                      <div className="flex gap-4 flex-1 items-center">
+                        <input
+                          value={editTitle}
+                          onChange={(e) => setEditTitle(e.target.value)}
+                          className="flex-1 px-4 py-2 border rounded-xl"
+                        />
 
-                      {/* Status selector */}
-                      <select
-                        value={editStatus}
-                        onChange={(e) => setEditStatus(Number(e.target.value))}
-                        className="px-4 py-2 border rounded-xl"
-                      >
-                        <option value={0}>Pending</option>
-                        <option value={1}>In Progress</option>
-                        <option value={2}>Completed</option>
-                      </select>
+                        <select
+                          value={editPriority}
+                          onChange={(e) =>
+                            setEditPriority(Number(e.target.value))
+                          }
+                          className="px-4 py-2 border rounded-xl"
+                        >
+                          <option value={0}>Low</option>
+                          <option value={1}>Medium</option>
+                          <option value={2}>High</option>
+                        </select>
 
-                      {/* Save edited task */}
+                        <select
+                          value={editStatus}
+                          onChange={(e) =>
+                            setEditStatus(Number(e.target.value))
+                          }
+                          className="px-4 py-2 border rounded-xl"
+                        >
+                          <option value={0}>Pending</option>
+                          <option value={1}>In Progress</option>
+                          <option value={2}>Completed</option>
+                        </select>
+
+                        <button
+                          onClick={() => updateTask(task.id)}
+                          className="text-green-600 font-bold"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex-1">
+                        <span className="text-xl font-medium">
+                          {task.title}
+                        </span>
+
+                        <span className="ml-6 text-gray-500">
+                          Priority: {priorityLabel}
+                        </span>
+
+                        <span className="ml-6 text-gray-500">
+                          Status: {statusLabel}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex gap-4">
                       <button
-                        onClick={() => updateTask(task.id)}
-                        className="text-green-600 font-bold"
+                        onClick={() => {
+                          setEditingTaskId(task.id);
+                          setEditTitle(task.title);
+                          setEditPriority(
+                            typeof task.priority === "number"
+                              ? task.priority
+                              : ["low", "medium", "high"].indexOf(task.priority) || 0
+                          );
+
+                          setEditStatus(
+                            typeof task.status === "number"
+                              ? task.status
+                              : ["pending", "in_progress", "completed"].indexOf(task.status) || 0
+                          );
+                        }}
+                        className="text-blue-600"
                       >
-                        Save
+                        <Edit2 size={22} />
+                      </button>
+
+                      <button
+                        onClick={() => deleteTask(task.id)}
+                        className="text-red-600"
+                      >
+                        <Trash2 size={22} />
                       </button>
                     </div>
-                  ) : (
-                    // Standard display mode
-                    <div className="flex-1">
-
-                      <span className="text-xl font-medium">{task.title}</span>
-
-                      <span className="ml-6 text-gray-500">
-                        Priority:{" "}
-                        {task.priority === 0
-                          ? "Low"
-                          : task.priority === 1
-                          ? "Medium"
-                          : "High"}
-                      </span>
-
-                      <span className="ml-6 text-gray-500">
-                        Status:{" "}
-                        {task.status === 0
-                          ? "Pending"
-                          : task.status === 1
-                          ? "In Progress"
-                          : "Completed"}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Edit + Delete actions */}
-                  <div className="flex gap-4">
-                    <button
-                      onClick={() => {
-                        setEditingTaskId(task.id);
-                        setEditTitle(task.title);
-                        setEditPriority(task.priority || 0);
-                        setEditStatus(task.status ?? 0);
-                      }}
-                      className="text-blue-600"
-                    >
-                      <Edit2 size={22} />
-                    </button>
-
-                    <button
-                      onClick={() => deleteTask(task.id)}
-                      className="text-red-600"
-                    >
-                      <Trash2 size={22} />
-                    </button>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
+
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiRequest } from "../api";
 
 export default function Login() {
   const [email, setEmail] = useState("conor@example.com");
@@ -8,29 +9,24 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-  e.preventDefault();
-  setMessage("");
+    e.preventDefault();
+    setMessage("");
 
-  try {
-    const response = await fetch("http://localhost:3000/api/v1/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      }),
-    });
+    try {
+      const data = await apiRequest("/login", "POST", {
+        email,
+        password,
+      });
 
-    const data = await response.json();
+      // Save JWT
+      localStorage.setItem("token", data.token);
 
-    if (!response.ok) throw new Error(data.error || "Login failed");
-
-    localStorage.setItem("token", data.token);
-    window.location.href = "/projects";
-  } catch (err) {
-    setMessage("Wrong email/password or backend down");
-  }
-};
+      // Navigate to projects
+      navigate("/projects");
+    } catch (err) {
+      setMessage("Wrong email/password or backend unavailable");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center p-4">
@@ -71,7 +67,9 @@ export default function Login() {
           </form>
 
           {message && (
-            <p className="mt-6 text-center text-red-600 font-medium">{message}</p>
+            <p className="mt-6 text-center text-red-600 font-medium">
+              {message}
+            </p>
           )}
 
           <p className="mt-8 text-center text-gray-500 text-sm">
