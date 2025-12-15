@@ -96,16 +96,15 @@ jobs:
           bundler-cache: true
 
       - name: Setup DB
-  env:
-    RAILS_ENV: test
-    PGHOST: localhost
-    PGUSER: postgres
-    PGPASSWORD: postgres
-  run: |
-    unset DATABASE_URL
-    bin/rails db:create
-    bin/rails db:schema:load
-
+        env:
+        RAILS_ENV: test
+        PGHOST: localhost
+        PGUSER: postgres
+        PGPASSWORD: password
+        run: |
+          unset DATABASE_URL
+          bin/rails db:create
+          bin/rails db:schema:load
 
       - name: Run RSpec
         env:
