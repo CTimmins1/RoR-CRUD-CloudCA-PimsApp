@@ -31,10 +31,10 @@ Built with Bootstrap for styling, Chartkick for data visualization, and GitHub A
 ### Technical Stack
 - Backend: Ruby on Rails 7 / 8  
 - Frontend: ERB, Bootstrap 5, Chartkick  
-- Database: SQLite (development) / PostgreSQL (production)  
+- Database: PostgreSQL (production)  
 - Testing: RSpec  
 - CI/CD: GitHub Actions  
-- Deployment: Render or Fly.io
+- Deployment: Render
 
 ---
 
