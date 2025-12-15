@@ -13,10 +13,12 @@ jobs:
     services:
       postgres:
         image: postgres:14
-        ports: [5432:5432]
+        ports:
+          - 5432:5432
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASSWORD: password123
+          POSTGRES_DB: pims_app_test
         options: >-
           --health-cmd="pg_isready -U postgres"
           --health-interval=10s
@@ -42,10 +44,8 @@ jobs:
           RAILS_ENV: test
           PGHOST: localhost
           PGUSER: postgres
-          PGPASSWORD: password
+          PGPASSWORD: password123
         run: |
           unset DATABASE_URL
           bin/rails db:create
           bin/rails db:schema:load
-
-
