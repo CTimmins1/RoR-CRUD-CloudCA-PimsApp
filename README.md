@@ -7,7 +7,7 @@ This repository uses a decoupled architecture.
 
 The main branch intentionally does not contain code.
 
-## Demo Login (for grading)
+## Demo Login 
 
 Email: conor@example.com  
 Password: password123
