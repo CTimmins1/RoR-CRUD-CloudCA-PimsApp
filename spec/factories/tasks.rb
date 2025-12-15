@@ -3,7 +3,7 @@ FactoryBot.define do
     association :project       # will also create a user through project
 
     title    { "My Task" }
-    priority { :medium }       
+    priority { :medium }
     status   { :pending }
   end
 end

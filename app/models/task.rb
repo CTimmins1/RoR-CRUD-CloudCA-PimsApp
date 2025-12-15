@@ -28,7 +28,7 @@ class Task < ApplicationRecord
   self[:status]     # returns integer 0/1/2
   end
 
-  #Ensure API responses return integer enum values
+  # Ensure API responses return integer enum values
   def as_json(options = {})
     super(options).merge(
       priority: self[:priority],

@@ -24,7 +24,7 @@ class ApplicationController < ActionController::API
 
     @current_user = User.find_by(id: user_id)
     unless @current_user
-      return render json: { error: "User not found" }, status: :unauthorized
+      render json: { error: "User not found" }, status: :unauthorized
     end
   end
 end

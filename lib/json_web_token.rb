@@ -1,4 +1,4 @@
-require 'jwt'
+require "jwt"
 
 class JsonWebToken
   SECRET = Rails.application.credentials.secret_key_base || "super-secret-dev-key-2025"
@@ -13,5 +13,4 @@ class JsonWebToken
 rescue
   nil
 end
-
 end

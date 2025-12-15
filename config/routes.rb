@@ -4,12 +4,11 @@ Rails.application.routes.draw do
       post "login", to: "sessions#create"
 
       resources :projects do
-        resources :tasks, only: [:index, :create]
+        resources :tasks, only: [ :index, :create ]
       end
 
       # added these to enable to me to edit tasks
-      resources :tasks, only: [:update, :destroy]
+      resources :tasks, only: [ :update, :destroy ]
     end
   end
 end
-
