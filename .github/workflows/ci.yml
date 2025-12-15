@@ -85,12 +85,11 @@ jobs:
       - name: Setup DB
         env:
           RAILS_ENV: test
-          PGHOST: localhost
-          PGUSER: postgres
-          PGPASSWORD: password
+          DATABASE_URL: postgres://postgres:password@localhost:5432/pims_app_test
         run: |
           bin/rails db:create
           bin/rails db:schema:load
+
 
       - name: Run RSpec
         env:

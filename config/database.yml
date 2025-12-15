@@ -28,10 +28,10 @@ test:
   adapter: postgresql
   encoding: unicode
   database: pims_app_test
-  pool: 5
   username: postgres
   password: postgres
   host: localhost
+
 
 
 
