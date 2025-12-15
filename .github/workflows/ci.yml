@@ -11,9 +11,6 @@ jobs:
   # ------------------------------------------
   scan_ruby:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: pims-backend
     steps:
       - uses: actions/checkout@v4
 
@@ -30,9 +27,6 @@ jobs:
   # ------------------------------------------
   scan_js:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: pims-backend
     steps:
       - uses: actions/checkout@v4
 
@@ -49,9 +43,6 @@ jobs:
   # ------------------------------------------
   lint_ruby:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: pims-backend
     steps:
       - uses: actions/checkout@v4
 
@@ -83,10 +74,6 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
-    defaults:
-      run:
-        working-directory: pims-backend
-
     steps:
       - uses: actions/checkout@v4
 
@@ -102,7 +89,6 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: password
         run: |
-          unset DATABASE_URL
           bin/rails db:create
           bin/rails db:schema:load
 
@@ -119,6 +105,7 @@ jobs:
     defaults:
       run:
         working-directory: pims-frontend
+
     steps:
       - uses: actions/checkout@v4
 
