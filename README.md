@@ -42,8 +42,8 @@ Built with Bootstrap for styling, Chartkick for data visualization, and GitHub A
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/CTimmins1/pims_app.git
-cd pims_app
+https://github.com/CTimmins1/RoR-CRUD-CloudCA-PimsApp/tree/pims-backend
+cd pims-backend
 
 2. Install dependencies
 bash
@@ -79,25 +79,6 @@ Runs RSpec for automated testing.
 Runs Brakeman for web vulnerabilities.
 
 Optionally deploys to Render after successful tests.
-
-Example workflow configuration (.github/workflows/ci.yml):
-
-yaml
-name: Rails CI
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.3.0
-      - run: bundle install
-      - run: bin/rails db:prepare
-      - run: bundle exec rubocop
-      - run: bundle exec rspec
 
 Learning Outcomes
 This project demonstrates:
